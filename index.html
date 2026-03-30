@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>6 Ж • BAN ROULETTE</title>
+    <script src="confetti.js"></script>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: 'Arial Black', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            background: linear-gradient(90deg, #ff0, #0ff, #f0f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbow 3s linear infinite;
+            text-transform: uppercase;
+        }
+        @keyframes rainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+        
+        #canvas-container { position: relative; margin: 15px 0; }
+        
+        canvas { 
+            border: 5px solid #fff; 
+            border-radius: 50%; 
+            box-shadow: 0 0 40px rgba(255,255,255,0.2); 
+        }
+
+        #pointer {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            width: 0; height: 0; 
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent; 
+            border-top: 35px solid #fff;
+            z-index: 10; 
+            filter: drop-shadow(0 0 8px #fff);
+        }
+
+        #spin-btn {
+            background: #fff; border: none; padding: 15px 45px;
+            font-size: 22px; font-weight: bold; border-radius: 50px;
+            cursor: pointer; box-shadow: 0 5px 20px rgba(255,255,255,0.4);
+            transition: 0.2s;
+        }
+        #spin-btn:active { transform: scale(0.9); }
+
+        #result {
+            margin-top: 20px; font-size: 24px; color: #f33;
+            font-weight: bold; text-align: center; 
+            text-shadow: 0 0 15px #f00; min-height: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>КТО ИЗ 6 "Ж" ОТЛЕТИТ? 💀</h1>
+    
+    <div id="canvas-container">
+        <div id="pointer"></div>
+        <canvas id="wheel" width="360" height="360"></canvas>
+    </div>
+
+    <button id="spin-btn" onclick="spin()">КРУТИТЬ БАН!</button>
+    <div id="result"></div>
+
+    <script>
+        const names = [
+            "Сафина", "марго", "Герман", "софия ахмадеева", "Вадим Нестеров", 
+            "Ралина Хазиахметова", "Рената Ахметова", "Артём", "Дамир", 
+            "марк", "Самина Давлетшина", "Искужина Ясмина", 
+            "камилла сырлыбаева", "Тимур", "Риана", "Артур Киреев", 
+            "Альсина Сагитова", "Имилина Давлетшина", "Вячеслав Герасимов", 
+            "Данил", "Радик", "Ринат", "Камилла Абдрахимова", 
+            "камила", "Тимофей Хлебников", "соня", "азалия аргинбаева", 
+            "Мират Бактыбаев", "Резида Исламгалиева", "Родион", "азаля", 
+            "Артём Кудрин", "Александра", "Маргарита", "Тимур Идрисов", "саньяровы"
+        ];
+
+        const canvas = document.getElementById('wheel');
+        const ctx = canvas.getContext('2d');
+        const boom = new Audio('boom.mp3');
+        let currentRot = 0;
+        let isSpinning = false;
+
+        function draw() {
+            const slice = (Math.PI * 2) / names.length;
+            ctx.clearRect(0,0,360,360);
+            names.forEach((n, i) => {
+                const angle = i * slice;
+                ctx.beginPath();
+                ctx.fillStyle = `hsl(${(i * 360) / names.length}, 75%, 40%)`;
+                ctx.moveTo(180, 180);
+                ctx.arc(180, 180, 180, angle, angle + slice);
+                ctx.fill();
+                
+                // Текст
+                ctx.save();
+                ctx.translate(180, 180);
+                ctx.rotate(angle + slice / 2);
+                ctx.fillStyle = "#fff";
+                ctx.font = "bold 9px sans-serif";
+                ctx.fillText(n.substring(0, 12), 75, 4);
+                ctx.restore();
+            });
+        }
+        draw();
+
+        function spin() {
+            if (isSpinning) return;
+            isSpinning = true;
+            document.getElementById('result').innerText = "";
+            
+            // Драматичное вращение (10+ оборотов)
+            let rot = Math.floor(Math.random() * 360) + 3600; 
+            currentRot += rot;
+            
+            canvas.style.transition = "transform 6s cubic-bezier(0.1, 0, 0.1, 1)";
+            canvas.style.transform = `rotate(${currentRot}deg)`;
+
+            setTimeout(() => {
+                isSpinning = false;
+                const deg = currentRot % 360;
+                const slice = 360 / names.length;
+                // Находим индекс (270 градусов - верхняя точка)
+                const idx = Math.floor((360 - deg + 270) % 360 / slice);
+                
+                document.getElementById('result').innerText = names[idx].toUpperCase() + " В БАНЕ! 💀";
+                
+                // Эффекты
+                try { boom.play(); } catch(e) {}
+                confetti({
+                    particleCount: 200,
+                    spread: 90,
+                    origin: { y: 0.6 },
+                    colors: ['#ff0000', '#ffffff', '#ffff00']
+                });
+            }, 6000);
+        }
+    </script>
+</body>
+  </html>
